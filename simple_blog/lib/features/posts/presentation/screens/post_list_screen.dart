@@ -3,9 +3,75 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/app/theme/theme_provider.dart';
+import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
+import 'package:simple_blog/features/posts/presentation/widgets/post_card.dart';
 
-class PostListScreen extends StatelessWidget {
+class PostListScreen extends StatefulWidget {
   const PostListScreen({super.key});
+
+  @override
+  State<PostListScreen> createState() => _PostListScreenState();
+}
+
+class _PostListScreenState extends State<PostListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostListProvider>().loadPosts();
+    });
+  }
+
+  Widget _buildBody(PostListProvider provider) {
+    if (provider.isLoading && provider.posts.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.hasError && provider.posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              provider.errorMessage ?? 'Unable to load posts.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: provider.loadPosts,
+              child: const Text('Try again'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (provider.isEmpty) {
+      return const Center(child: Text('No posts yet.'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: provider.posts.length,
+      itemBuilder: ((context, index) {
+        final post = provider.posts[index];
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: PostCard(
+            post: post,
+            onTap: () {
+              context.goNamed(
+                RouteNames.postDetail,
+                pathParameters: {'postId': post.id},
+              );
+            },
+          ),
+        );
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +79,31 @@ class PostListScreen extends StatelessWidget {
       (provider) => provider.isDarkMode,
     );
 
+    final postListProvider = context.watch<PostListProvider>();
+
+    final isAuthenticated = context.select<AuthProvider, bool>(
+      (provider) => provider.isAuthenticated,
+    );
+
     return Scaffold(
+      floatingActionButton: isAuthenticated
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                context.goNamed(RouteNames.createPost);
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Create post'),
+            )
+          : null,
       appBar: AppBar(
         title: const Text('Simple Blog'),
         actions: [
+          if (!isAuthenticated)
+            IconButton(
+              onPressed: () => context.goNamed(RouteNames.register),
+              tooltip: 'Create account',
+              icon: const Icon(Icons.person_add_outlined),
+            ),
           IconButton(
             onPressed: context.read<ThemeProvider>().toggleTheme,
             tooltip: isDarkMode
@@ -26,18 +113,7 @@ class PostListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const Center(child: Text('Posts will appear here')),
-          IconButton(
-            onPressed: () {
-              context.goNamed(RouteNames.register);
-            },
-            tooltip: 'Create account',
-            icon: const Icon(Icons.person_add_outlined),
-          ),
-        ],
-      ),
+      body: _buildBody(postListProvider),
     );
   }
 }

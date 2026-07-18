@@ -6,6 +6,8 @@ import 'package:simple_blog/app/theme/app_theme.dart';
 import 'package:simple_blog/app/theme/theme_provider.dart';
 import 'package:simple_blog/features/auth/data/auth_repository.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:simple_blog/features/posts/data/post_repository.dart';
+import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SimpleBlogApp extends StatelessWidget {
@@ -15,10 +17,19 @@ class SimpleBlogApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        //My Theme Provider
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+
+        //Auth Repo and Provider
         Provider(create: (_) => AuthRepository(Supabase.instance.client)),
         ChangeNotifierProvider(
           create: (context) => AuthProvider(context.read<AuthRepository>()),
+        ),
+
+        //Posts Repo and Provider
+        Provider(create: (_) => PostRepository(Supabase.instance.client)),
+        ChangeNotifierProvider(
+          create: (context) => PostListProvider(context.read<PostRepository>()),
         ),
       ],
       child: const _AppView(),
