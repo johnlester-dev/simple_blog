@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/app/theme/theme_provider.dart';
 
 class PostListScreen extends StatelessWidget {
@@ -24,7 +26,18 @@ class PostListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Posts will appear here')),
+      body: Column(
+        children: [
+          const Center(child: Text('Posts will appear here')),
+          IconButton(
+            onPressed: () {
+              context.goNamed(RouteNames.register);
+            },
+            tooltip: 'Create account',
+            icon: const Icon(Icons.person_add_outlined),
+          ),
+        ],
+      ),
     );
   }
 }

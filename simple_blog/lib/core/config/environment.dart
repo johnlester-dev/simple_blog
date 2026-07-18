@@ -15,7 +15,7 @@ abstract final class Environment {
   static AppEnvironment get current {
     return switch (_environmentName) {
       'development' => AppEnvironment.development,
-      'sandbox' => AppEnvironment.sandbox,
+      // 'sandbox' => AppEnvironment.sandbox,
       'production' => AppEnvironment.production,
       _ => throw StateError('Unsupported APP_ENV: $_environmentName'),
     };
