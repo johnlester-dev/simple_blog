@@ -1,4 +1,5 @@
 import 'package:simple_blog/features/comments/data/models/comment_image.dart';
+import 'package:simple_blog/features/profile/data/models/user_profile.dart';
 
 class Comment {
   final String id;
@@ -8,6 +9,7 @@ class Comment {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<CommentImage> images;
+  final UserProfile? author;
 
   const Comment({
     required this.id,
@@ -16,6 +18,7 @@ class Comment {
     required this.content,
     required this.createdAt,
     required this.updatedAt,
+    this.author,
     this.images = const [],
   });
 
@@ -26,6 +29,8 @@ class Comment {
         .map((image) => CommentImage.fromJson(image as Map<String, dynamic>))
         .toList();
 
+    final authorJson = json['author'] as Map<String, dynamic>?;
+
     return Comment(
       id: json['id'] as String,
       postId: json['post_id'] as String,
@@ -34,6 +39,7 @@ class Comment {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       images: images,
+      author: authorJson == null ? null : UserProfile.fromJson(authorJson),
     );
   }
 
@@ -41,6 +47,7 @@ class Comment {
     String? content,
     List<CommentImage>? images,
     DateTime? updatedAt,
+    UserProfile? author,
   }) {
     return Comment(
       id: id,
@@ -50,6 +57,7 @@ class Comment {
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       images: images ?? this.images,
+      author: author ?? this.author,
     );
   }
 }

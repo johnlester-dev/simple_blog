@@ -5,6 +5,7 @@ abstract final class RouteNames {
   static const createPost = 'create-post';
   static const postDetail = 'post-detail';
   static const editPost = 'edit-post';
+  static const profile = 'profile';
 }
 
 abstract final class RoutePaths {
@@ -14,4 +15,5 @@ abstract final class RoutePaths {
   static const createPost = '/posts/new';
   static const postDetail = '/posts/:postId';
   static const editPost = '/posts/:postId/edit';
+  static const profile = '/profile';
 }

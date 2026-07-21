@@ -9,6 +9,7 @@ import 'package:simple_blog/features/auth/presentation/providers/auth_provider.d
 import 'package:simple_blog/features/comments/data/comment_repository.dart';
 import 'package:simple_blog/features/posts/data/post_repository.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
+import 'package:simple_blog/features/profile/data/profile_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SimpleBlogApp extends StatelessWidget {
@@ -35,6 +36,9 @@ class SimpleBlogApp extends StatelessWidget {
 
         //Comments Provider
         Provider(create: (_) => CommentRepository(Supabase.instance.client)),
+
+        // Profile repository
+        Provider(create: (_) => ProfileRepository(Supabase.instance.client)),
       ],
       child: const _AppView(),
     );

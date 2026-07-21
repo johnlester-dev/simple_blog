@@ -114,6 +114,7 @@ class PostDetailScreen extends StatelessWidget {
 
     final post = provider.post;
     final isOwner = post != null && post.userId == currentUserId;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Post'),
@@ -166,6 +167,7 @@ class _PostContent extends StatelessWidget {
     final formattedDate = MaterialLocalizations.of(
       context,
     ).formatMediumDate(post.createdAt.toLocal());
+    final author = post.author;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Center(
@@ -207,6 +209,31 @@ class _PostContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 18,
+                                foregroundImage: author?.avatarUrl != null
+                                    ? NetworkImage(author!.avatarUrl!)
+                                    : null,
+                                child: author?.avatarUrl == null
+                                    ? const Icon(Icons.person_outline, size: 20)
+                                    : null,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  author?.displayName ?? 'User',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                           Text(
                             post.title,
                             style: theme.textTheme.headlineMedium?.copyWith(

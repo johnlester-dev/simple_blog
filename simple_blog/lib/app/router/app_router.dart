@@ -13,6 +13,9 @@ import 'package:simple_blog/features/posts/presentation/providers/post_form_prov
 import 'package:simple_blog/features/posts/presentation/screens/post_form_screen.dart';
 import 'package:simple_blog/features/posts/presentation/screens/post_list_screen.dart';
 import 'package:simple_blog/features/posts/presentation/screens/post_detail_screen.dart';
+import 'package:simple_blog/features/profile/data/profile_repository.dart';
+import 'package:simple_blog/features/profile/presentation/providers/profile_provider.dart';
+import 'package:simple_blog/features/profile/presentation/screens/profile_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: RoutePaths.posts,
@@ -82,6 +85,19 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
           child: PostDetailScreen(postId: postId),
+        );
+      },
+    ),
+    GoRoute(
+      path: RoutePaths.profile,
+      name: RouteNames.profile,
+      builder: (context, state) {
+        return ChangeNotifierProvider(
+          create: (context) {
+            return ProfileProvider(context.read<ProfileRepository>())
+              ..loadProfile();
+          },
+          child: const ProfileScreen(),
         );
       },
     ),

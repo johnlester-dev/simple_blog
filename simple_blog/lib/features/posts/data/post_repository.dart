@@ -13,7 +13,11 @@ class PostRepository {
   Future<List<Post>> fetchPosts() async {
     final response = await _supabaseClient
         .from('posts')
-        .select('*, post_images(*)')
+        .select(
+          '*, '
+          'author:profiles!posts_user_id_profiles_fkey(*), '
+          'post_images(*)',
+        )
         .order('created_at', ascending: false)
         .order('position', referencedTable: 'post_images', ascending: true);
 
@@ -23,7 +27,11 @@ class PostRepository {
   Future<Post?> fetchPost(String postId) async {
     final response = await _supabaseClient
         .from('posts')
-        .select('*, post_images(*)')
+        .select(
+          '*, '
+          'author:profiles!posts_user_id_profiles_fkey(*), '
+          'post_images(*)',
+        )
         .eq('id', postId)
         .order('position', referencedTable: 'post_images', ascending: true)
         .maybeSingle();
@@ -49,7 +57,10 @@ class PostRepository {
           'title': title.trim(),
           'content': content.trim(),
         })
-        .select()
+        .select(
+          '*, '
+          'author:profiles!posts_user_id_profiles_fkey(*)',
+        )
         .single();
 
     return Post.fromJson(response);
@@ -228,7 +239,11 @@ class PostRepository {
         })
         .eq('id', postId)
         .eq('user_id', user.id)
-        .select('*, post_images(*)')
+        .select(
+          '*, '
+          'author:profiles!posts_user_id_profiles_fkey(*), '
+          'post_images(*)',
+        )
         .order('position', referencedTable: 'post_images', ascending: true)
         .single();
 

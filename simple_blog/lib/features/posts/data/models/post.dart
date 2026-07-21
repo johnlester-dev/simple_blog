@@ -1,4 +1,5 @@
 import 'package:simple_blog/features/posts/data/models/post_image.dart';
+import 'package:simple_blog/features/profile/data/models/user_profile.dart';
 
 class Post {
   final String id;
@@ -8,6 +9,7 @@ class Post {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<PostImage> images;
+  final UserProfile? author;
 
   const Post({
     required this.id,
@@ -17,6 +19,7 @@ class Post {
     required this.createdAt,
     required this.updatedAt,
     required this.images,
+    this.author,
   });
 
   Post copyWith({
@@ -27,6 +30,7 @@ class Post {
     DateTime? createdAt,
     DateTime? updatedAt,
     List<PostImage>? images,
+    UserProfile? author,
   }) {
     return Post(
       id: id ?? this.id,
@@ -36,6 +40,7 @@ class Post {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       images: images ?? this.images,
+      author: author ?? this.author,
     );
   }
 
@@ -46,6 +51,7 @@ class Post {
             .map((image) => PostImage.fromJson((image as Map<String, dynamic>)))
             .toList()
           ..sort((first, second) => first.position.compareTo(second.position));
+    final authorJson = jsonData['author'] as Map<String, dynamic>?;
 
     return Post(
       id: jsonData['id'] as String,
@@ -54,6 +60,7 @@ class Post {
       content: jsonData['content'] as String,
       createdAt: DateTime.parse(jsonData['created_at'] as String),
       updatedAt: DateTime.parse(jsonData['updated_at'] as String),
+      author: authorJson == null ? null : UserProfile.fromJson(authorJson),
       images: images,
     );
   }

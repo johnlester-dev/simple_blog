@@ -11,6 +11,7 @@ class CommentCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool isUpdating;
   final VoidCallback? onEdit;
+
   const CommentCard({
     required this.comment,
     this.isOwner = false,
@@ -28,7 +29,7 @@ class CommentCard extends StatelessWidget {
     final formattedDate = MaterialLocalizations.of(
       context,
     ).formatMediumDate(comment.createdAt.toLocal());
-
+    final author = comment.author;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -38,13 +39,18 @@ class CommentCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 16,
-                  child: Icon(Icons.person_outline, size: 18),
+                  foregroundImage: author?.avatarUrl != null
+                      ? NetworkImage(author!.avatarUrl!)
+                      : null,
+                  child: author?.avatarUrl == null
+                      ? const Icon(Icons.person_outline, size: 18)
+                      : null,
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'User',
+                  author?.displayName ?? 'User',
                   style: theme.textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),

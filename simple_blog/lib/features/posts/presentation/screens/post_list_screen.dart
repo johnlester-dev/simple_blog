@@ -138,6 +138,18 @@ class _PostListScreenState extends State<PostListScreen> {
           ),
           if (isAuthenticated)
             IconButton(
+              onPressed: () async {
+                await context.pushNamed(RouteNames.profile);
+
+                if (!context.mounted) return;
+
+                await context.read<PostListProvider>().loadPosts();
+              },
+              tooltip: 'Profile',
+              icon: const Icon(Icons.account_circle_outlined),
+            ),
+          if (isAuthenticated)
+            IconButton(
               onPressed: isAuthLoading ? null : _logout,
               tooltip: 'Sign out',
               icon: isAuthLoading

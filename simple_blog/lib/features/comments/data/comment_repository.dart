@@ -12,7 +12,11 @@ class CommentRepository {
   Future<List<Comment>> fetchComments(String postId) async {
     final response = await _supabaseClient
         .from('comments')
-        .select('*, comment_images(*)')
+        .select(
+          '*, '
+          'author:profiles!comments_user_id_profiles_fkey(*), '
+          'comment_images(*)',
+        )
         .eq('post_id', postId)
         .order('created_at', ascending: true)
         .order('position', referencedTable: 'comment_images', ascending: true);
@@ -47,7 +51,10 @@ class CommentRepository {
           'user_id': user.id,
           'content': trimmedContent,
         })
-        .select()
+        .select(
+          '*, '
+          'author:profiles!comments_user_id_profiles_fkey(*)',
+        )
         .single();
 
     return Comment.fromJson(response);
@@ -170,7 +177,11 @@ class CommentRepository {
   Future<Comment?> fetchComment(String commentId) async {
     final response = await _supabaseClient
         .from('comments')
-        .select('*, comment_images(*)')
+        .select(
+          '*, '
+          'author:profiles!comments_user_id_profiles_fkey(*), '
+          'comment_images(*)',
+        )
         .eq('id', commentId)
         .order('position', referencedTable: 'comment_images', ascending: true)
         .maybeSingle();
@@ -250,7 +261,11 @@ class CommentRepository {
         })
         .eq('id', commentId)
         .eq('user_id', user.id)
-        .select('*, comment_images(*)')
+        .select(
+          '*, '
+          'author:profiles!comments_user_id_profiles_fkey(*), '
+          'comment_images(*)',
+        )
         .order('position', referencedTable: 'comment_images', ascending: true)
         .single();
 

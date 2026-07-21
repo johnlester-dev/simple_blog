@@ -13,7 +13,7 @@ class PostCard extends StatelessWidget {
     final formattedDate = MaterialLocalizations.of(
       context,
     ).formatMediumDate(post.createdAt.toLocal());
-
+    final author = post.author;
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -48,6 +48,31 @@ class PostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        foregroundImage: author?.avatarUrl != null
+                            ? NetworkImage(author!.avatarUrl!)
+                            : null,
+                        child: author?.avatarUrl == null
+                            ? const Icon(Icons.person_outline, size: 18)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          author?.displayName ?? 'User',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     post.title,
                     style: theme.textTheme.titleLarge?.copyWith(
