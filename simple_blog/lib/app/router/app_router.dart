@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/features/auth/presentation/screens/login_screen.dart';
 import 'package:simple_blog/features/auth/presentation/screens/register_screen.dart';
+import 'package:simple_blog/features/comments/data/comment_repository.dart';
+import 'package:simple_blog/features/comments/presentation/providers/comment_provider.dart';
 import 'package:simple_blog/features/posts/data/models/post.dart';
 import 'package:simple_blog/features/posts/data/post_repository.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_detail_provider.dart';
@@ -41,20 +43,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: RoutePaths.postDetail,
-      name: RouteNames.postDetail,
-      builder: (context, state) {
-        final postId = state.pathParameters['postId']!;
-        return ChangeNotifierProvider(
-          create: (context) {
-            return PostDetailProvider(context.read<PostRepository>())
-              ..loadPost(postId);
-          },
-          child: PostDetailScreen(postId: postId),
-        );
-      },
-    ),
-    GoRoute(
       path: RoutePaths.editPost,
       name: RouteNames.editPost,
       builder: (context, state) {
@@ -69,6 +57,31 @@ final GoRouter appRouter = GoRouter(
         return ChangeNotifierProvider(
           create: (context) => PostFormProvider(context.read<PostRepository>()),
           child: PostFormScreen(initialPost: post),
+        );
+      },
+    ),
+    GoRoute(
+      path: RoutePaths.postDetail,
+      name: RouteNames.postDetail,
+      builder: (context, state) {
+        final postId = state.pathParameters['postId']!;
+
+        return MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (context) {
+                return PostDetailProvider(context.read<PostRepository>())
+                  ..loadPost(postId);
+              },
+            ),
+            ChangeNotifierProvider(
+              create: (context) {
+                return CommentProvider(context.read<CommentRepository>())
+                  ..loadComments(postId);
+              },
+            ),
+          ],
+          child: PostDetailScreen(postId: postId),
         );
       },
     ),

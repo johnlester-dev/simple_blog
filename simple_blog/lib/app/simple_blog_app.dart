@@ -6,6 +6,7 @@ import 'package:simple_blog/app/theme/app_theme.dart';
 import 'package:simple_blog/app/theme/theme_provider.dart';
 import 'package:simple_blog/features/auth/data/auth_repository.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:simple_blog/features/comments/data/comment_repository.dart';
 import 'package:simple_blog/features/posts/data/post_repository.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,6 +32,9 @@ class SimpleBlogApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => PostListProvider(context.read<PostRepository>()),
         ),
+
+        //Comments Provider
+        Provider(create: (_) => CommentRepository(Supabase.instance.client)),
       ],
       child: const _AppView(),
     );

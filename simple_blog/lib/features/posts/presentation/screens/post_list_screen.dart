@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/app/theme/theme_provider.dart';
+import 'package:simple_blog/core/widgets/app_notification.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
 import 'package:simple_blog/features/posts/presentation/widgets/post_card.dart';
@@ -21,6 +22,26 @@ class _PostListScreenState extends State<PostListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PostListProvider>().loadPosts();
     });
+  }
+
+  Future<void> _logout() async {
+    final authProvider = context.read<AuthProvider>();
+    final loggedOut = await authProvider.logout();
+
+    if (!mounted) return;
+
+    if (!loggedOut) {
+      AppNotification.error(
+        context,
+        message: authProvider.errorMessage ?? 'Unable to sign out.',
+      );
+      return;
+    }
+
+    AppNotification.success(
+      context,
+      message: 'You have signed out successfully.',
+    );
   }
 
   Widget _buildBody(PostListProvider provider) {
@@ -85,6 +106,10 @@ class _PostListScreenState extends State<PostListScreen> {
       (provider) => provider.isAuthenticated,
     );
 
+    final isAuthLoading = context.select<AuthProvider, bool>(
+      (provider) => provider.isLoading,
+    );
+
     return Scaffold(
       floatingActionButton: isAuthenticated
           ? FloatingActionButton.extended(
@@ -111,6 +136,17 @@ class _PostListScreenState extends State<PostListScreen> {
                 : 'Switch to dark mode',
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
           ),
+          if (isAuthenticated)
+            IconButton(
+              onPressed: isAuthLoading ? null : _logout,
+              tooltip: 'Sign out',
+              icon: isAuthLoading
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.logout_rounded),
+            ),
         ],
       ),
       body: _buildBody(postListProvider),

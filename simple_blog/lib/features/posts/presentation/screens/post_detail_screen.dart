@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/core/widgets/app_notification.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:simple_blog/features/comments/presentation/widgets/comment_form.dart';
+import 'package:simple_blog/features/comments/presentation/widgets/comment_list.dart';
 import 'package:simple_blog/features/posts/data/models/post.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_detail_provider.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
@@ -169,78 +171,99 @@ class _PostContent extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 760),
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (post.images.isNotEmpty)
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: PageView.builder(
-                      itemCount: post.images.length,
-                      itemBuilder: (context, index) {
-                        final image = post.images[index];
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (post.images.isNotEmpty)
+                      AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: PageView.builder(
+                          itemCount: post.images.length,
+                          itemBuilder: (context, index) {
+                            final image = post.images[index];
 
-                        return Image.network(
-                          image.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const ColoredBox(
-                              color: Colors.black12,
-                              child: Center(
-                                child: Icon(Icons.broken_image_outlined),
-                              ),
+                            return Image.network(
+                              image.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const ColoredBox(
+                                  color: Colors.black12,
+                                  child: Center(
+                                    child: Icon(Icons.broken_image_outlined),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.title,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.schedule_outlined,
-                            size: 17,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 6),
                           Text(
-                            formattedDate,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                            post.title,
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (post.images.length > 1) ...[
-                            const Spacer(),
-                            const Icon(Icons.photo_library_outlined, size: 17),
-                            const SizedBox(width: 5),
-                            Text('${post.images.length} images'),
-                          ],
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.schedule_outlined,
+                                size: 17,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                formattedDate,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              if (post.images.length > 1) ...[
+                                const Spacer(),
+                                const Icon(
+                                  Icons.photo_library_outlined,
+                                  size: 17,
+                                ),
+                                const SizedBox(width: 5),
+                                Text('${post.images.length} images'),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            post.content,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              height: 1.6,
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        post.content,
-                        style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Comments',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              CommentForm(postId: post.id),
+              const SizedBox(height: 24),
+              CommentList(postId: post.id),
+            ],
           ),
         ),
       ),
