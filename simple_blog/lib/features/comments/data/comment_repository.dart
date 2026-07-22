@@ -9,7 +9,11 @@ class CommentRepository {
 
   const CommentRepository(this._supabaseClient);
 
-  Future<List<Comment>> fetchComments(String postId) async {
+  Future<List<Comment>> fetchComments(
+    String postId, {
+    required int offset,
+    required int limit,
+  }) async {
     final response = await _supabaseClient
         .from('comments')
         .select(
@@ -19,7 +23,8 @@ class CommentRepository {
         )
         .eq('post_id', postId)
         .order('created_at', ascending: true)
-        .order('position', referencedTable: 'comment_images', ascending: true);
+        .order('position', referencedTable: 'comment_images', ascending: true)
+        .range(offset, offset + limit - 1);
 
     return response.map(Comment.fromJson).toList();
   }

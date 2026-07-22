@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const SimpleBlogApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Simple Blog'), findsOneWidget);
+    expect(find.text('Simple Blog/Forum'), findsOneWidget);
     expect(find.text('Posts will appear here'), findsOneWidget);
   });
 

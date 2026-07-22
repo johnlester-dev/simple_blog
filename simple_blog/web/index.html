@@ -18,20 +18,142 @@
 
     <meta charset="UTF-8" />
     <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-    <meta name="description" content="A new Flutter project." />
+    <meta
+      name="description"
+      content="Simple Blog/Forum — share posts, images, and conversations."
+    />
+    <meta name="theme-color" content="#003f74" />
     <!-- iOS meta tags & icons -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="simple_blog" />
-    <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+    <meta name="apple-mobile-web-app-title" content="Simple Blog/Forum" />
+    <link rel="apple-touch-icon" href="icons/simple-blog.svg?v=4" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="any"
+      href="icons/simple-blog.svg?v=4"
+    />
 
-    <title>simple_blog</title>
+    <title>Simple Blog/Forum</title>
     <link rel="manifest" href="manifest.json" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #f7f9fb;
+      }
+
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #f7f9fb;
+        color: #191c1e;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        transition: opacity 160ms ease-out;
+      }
+
+      #app-splash.app-splash--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .app-splash__content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .app-splash__logo {
+        width: 72px;
+        height: 72px;
+        filter: drop-shadow(0 10px 20px rgb(0 63 116 / 18%));
+      }
+
+      .app-splash__name {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.4px;
+      }
+
+      .app-splash__loader {
+        width: 112px;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #d0e1fb;
+      }
+
+      .app-splash__loader::after {
+        display: block;
+        width: 45%;
+        height: 100%;
+        border-radius: inherit;
+        background: #003f74;
+        content: "";
+        animation: app-splash-loading 900ms ease-in-out infinite;
+      }
+
+      @keyframes app-splash-loading {
+        from {
+          transform: translateX(-110%);
+        }
+        to {
+          transform: translateX(245%);
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        html,
+        body,
+        #app-splash {
+          background: #111416;
+        }
+
+        #app-splash {
+          color: #e2e2e6;
+        }
+
+        .app-splash__loader {
+          background: #394957;
+        }
+
+        .app-splash__loader::after {
+          background: #aaccff;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .app-splash__loader::after {
+          animation-duration: 1800ms;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="app-splash" role="status" aria-label="Loading Simple Blog/Forum">
+      <div class="app-splash__content">
+        <img
+          class="app-splash__logo"
+          src="icons/simple-blog.svg"
+          alt=""
+          width="72"
+          height="72"
+        />
+        <p class="app-splash__name">Simple Blog/Forum</p>
+        <div class="app-splash__loader" aria-hidden="true"></div>
+      </div>
+    </div>
     <script src="flutter_bootstrap.js" async></script>
   </body>
 </html>

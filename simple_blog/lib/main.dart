@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simple_blog/app/simple_blog_app.dart';
 import 'package:simple_blog/core/config/environment.dart';
@@ -6,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
   Environment.validate();

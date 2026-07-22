@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -55,11 +57,12 @@ class _AppView extends StatelessWidget {
     );
 
     return MaterialApp.router(
-      title: 'Simple Blog',
+      title: 'Simple Blog/Forum',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      scrollBehavior: const _AppScrollBehavior(),
       routerConfig: appRouter,
       builder: (context, child) => ResponsiveBreakpoints.builder(
         child: child!,
@@ -70,5 +73,26 @@ class _AppView extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.trackpad,
+  };
+
+  @override
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    return child;
   }
 }

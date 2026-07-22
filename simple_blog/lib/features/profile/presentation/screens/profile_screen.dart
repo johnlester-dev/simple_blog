@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_blog/core/widgets/app_notification.dart';
+import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simple_blog/features/profile/presentation/providers/profile_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -154,6 +155,9 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<ProfileProvider>();
     final profile = provider.profile;
+    final email = context.select<AuthProvider, String?>(
+      (provider) => provider.currentUser?.email,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -190,75 +194,184 @@ class ProfileScreen extends StatelessWidget {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 48),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 58,
-                          foregroundImage: profile.avatarUrl != null
-                              ? NetworkImage(profile.avatarUrl!)
-                              : null,
-                          child: profile.avatarUrl == null
-                              ? const Icon(Icons.person_outline, size: 54)
-                              : null,
-                        ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            FilledButton.tonalIcon(
-                              onPressed: provider.isSaving
-                                  ? null
-                                  : () => _changeAvatar(context, provider),
-                              icon: const Icon(
-                                Icons.add_photo_alternate_outlined,
-                              ),
-                              label: Text(
-                                profile.avatarUrl == null
-                                    ? 'Add photo'
-                                    : 'Change photo',
-                              ),
-                            ),
-                            if (profile.avatarUrl != null)
-                              TextButton.icon(
-                                onPressed: provider.isSaving
-                                    ? null
-                                    : () => _deleteAvatar(context, provider),
-                                icon: const Icon(Icons.delete_outline),
-                                label: const Text('Remove photo'),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          profile.displayName,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 12),
-                        FilledButton.tonalIcon(
-                          onPressed: provider.isSaving
-                              ? null
-                              : () => _editDisplayName(context, provider),
-                          icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Edit name'),
-                        ),
-                      ],
-                    ),
-                  ),
+                constraints: const BoxConstraints(maxWidth: 820),
+                child: _ProfilePanel(
+                  displayName: profile.displayName,
+                  email: email,
+                  avatarUrl: profile.avatarUrl,
+                  memberSince: profile.createdAt,
+                  isSaving: provider.isSaving,
+                  onChangeAvatar: () => _changeAvatar(context, provider),
+                  onDeleteAvatar: profile.avatarUrl == null
+                      ? null
+                      : () => _deleteAvatar(context, provider),
+                  onEditName: () => _editDisplayName(context, provider),
                 ),
               ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ProfilePanel extends StatelessWidget {
+  const _ProfilePanel({
+    required this.displayName,
+    required this.email,
+    required this.avatarUrl,
+    required this.memberSince,
+    required this.isSaving,
+    required this.onChangeAvatar,
+    required this.onDeleteAvatar,
+    required this.onEditName,
+  });
+
+  final String displayName;
+  final String? email;
+  final String? avatarUrl;
+  final DateTime memberSince;
+  final bool isSaving;
+  final VoidCallback onChangeAvatar;
+  final VoidCallback? onDeleteAvatar;
+  final VoidCallback onEditName;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final joined = MaterialLocalizations.of(
+      context,
+    ).formatMonthYear(memberSince.toLocal());
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 150,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [colors.primary, colors.tertiary],
+              ),
+            ),
+          ),
+          Transform.translate(
+            offset: const Offset(0, -52),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.end,
+                    spacing: 16,
+                    runSpacing: 12,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: CircleAvatar(
+                          radius: 58,
+                          backgroundColor: colors.secondaryContainer,
+                          foregroundImage: avatarUrl == null
+                              ? null
+                              : NetworkImage(avatarUrl!),
+                          child: avatarUrl == null
+                              ? Icon(
+                                  Icons.person_rounded,
+                                  size: 54,
+                                  color: colors.onSecondaryContainer,
+                                )
+                              : null,
+                        ),
+                      ),
+                      FilledButton.icon(
+                        onPressed: isSaving ? null : onEditName,
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: const Text('Edit profile'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    displayName,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  if (email != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      email!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16,
+                        color: colors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'Joined $joined',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Divider(color: colors.outlineVariant),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Profile photo',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: isSaving ? null : onChangeAvatar,
+                        icon: const Icon(Icons.photo_camera_outlined),
+                        label: Text(
+                          avatarUrl == null ? 'Upload photo' : 'Change photo',
+                        ),
+                      ),
+                      if (onDeleteAvatar != null)
+                        TextButton.icon(
+                          onPressed: isSaving ? null : onDeleteAvatar,
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Remove'),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

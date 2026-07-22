@@ -87,7 +87,13 @@ class _CommentFormState extends State<CommentForm> {
               const Expanded(child: Text('Sign in to join the conversation.')),
               const SizedBox(width: 12),
               FilledButton.tonal(
-                onPressed: () => context.pushNamed(RouteNames.login),
+                onPressed: () => context.goNamed(
+                  RouteNames.register,
+                  queryParameters: {
+                    'mode': 'login',
+                    'redirect': GoRouterState.of(context).uri.toString(),
+                  },
+                ),
                 child: const Text('Sign in'),
               ),
             ],

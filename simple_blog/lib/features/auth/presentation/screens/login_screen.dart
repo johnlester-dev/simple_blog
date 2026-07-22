@@ -1,60 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_framework/responsive_framework.dart';
 import 'package:simple_blog/app/router/route_names.dart';
+import 'package:simple_blog/core/utils/validators.dart';
 import 'package:simple_blog/core/widgets/app_notification.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simple_blog/features/auth/presentation/widgets/login_card.dart';
-import 'package:simple_blog/features/auth/presentation/widgets/registration_introduction.dart';
+import 'package:simple_blog/features/auth/presentation/widgets/registration_card.dart';
+import 'package:simple_blog/features/auth/presentation/widgets/auth_background.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({this.initialLogin = true, super.key});
+
+  final bool initialLogin;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailError = ValueNotifier<String?>(null);
+  final _passwordError = ValueNotifier<String?>(null);
 
   bool _obscurePassword = true;
+  late bool _isLogin;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLogin = widget.initialLogin;
+    _emailController.addListener(_clearEmailError);
+    _passwordController.addListener(_clearPasswordError);
+  }
+
+  void _clearEmailError() {
+    if (_emailError.value != null) _emailError.value = null;
+  }
+
+  void _clearPasswordError() {
+    if (_passwordError.value != null) _passwordError.value = null;
+  }
+
+  void _switchMode(bool login) {
+    if (_isLogin == login) return;
+    FocusScope.of(context).unfocus();
+    _emailError.value = null;
+    _passwordError.value = null;
+    context.read<AuthProvider>().clearError();
+    setState(() => _isLogin = login);
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailError.dispose();
+    _passwordError.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    _emailError.value = Validators.email(_emailController.text);
+    _passwordError.value = Validators.password(_passwordController.text);
+
+    if (_emailError.value != null || _passwordError.value != null) return;
+
     FocusScope.of(context).unfocus();
-
-    if (!_formKey.currentState!.validate()) return;
-
     final authProvider = context.read<AuthProvider>();
-    final loggedIn = await authProvider.login(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    final succeeded = _isLogin
+        ? await authProvider.login(
+            email: _emailController.text,
+            password: _passwordController.text,
+          )
+        : await authProvider.register(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
 
     if (!mounted) return;
 
-    if (!loggedIn) {
+    if (!succeeded) {
       AppNotification.error(
         context,
-        message: authProvider.errorMessage ?? 'Unable to sign in.',
+        message:
+            authProvider.errorMessage ??
+            (_isLogin ? 'Unable to sign in.' : 'Unable to create account.'),
       );
       return;
     }
 
     AppNotification.success(
       context,
-      message: 'Welcome back. You are now signed in.',
+      message: _isLogin
+          ? 'Welcome back. You are now signed in.'
+          : 'Your account was created successfully.',
     );
-    context.goNamed(RouteNames.posts);
+    final redirect = GoRouterState.of(context).uri.queryParameters['redirect'];
+    if (redirect != null &&
+        redirect.startsWith('/') &&
+        !redirect.startsWith('//')) {
+      context.go(redirect);
+    } else {
+      context.goNamed(RouteNames.posts);
+    }
   }
 
   @override
@@ -62,51 +114,82 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLoading = context.select<AuthProvider, bool>(
       (provider) => provider.isLoading,
     );
+    final isDesktop = MediaQuery.sizeOf(context).width >= 700;
 
-    return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isDesktop = ResponsiveBreakpoints.of(context).isDesktop;
-            final card = LoginCard(
-              formKey: _formKey,
+    final card = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 160),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeOut,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: [...previousChildren, ?currentChild],
+        );
+      },
+      child: _isLogin
+          ? LoginCard(
+              key: const ValueKey('login'),
+              formKey: _loginFormKey,
               emailController: _emailController,
               passwordController: _passwordController,
+              emailError: _emailError,
+              passwordError: _passwordError,
               obscurePassword: _obscurePassword,
               isLoading: isLoading,
-              showBrand: !isDesktop,
-              onTogglePassword: () {
-                setState(() => _obscurePassword = !_obscurePassword);
-              },
+              isDesktop: isDesktop,
+              showBrand: true,
+              onTogglePassword: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+              onSwitchMode: () => _switchMode(false),
               onSubmit: _submit,
-            );
+            )
+          : RegistrationCard(
+              key: const ValueKey('register'),
+              formKey: _registerFormKey,
+              emailController: _emailController,
+              passwordController: _passwordController,
+              emailError: _emailError,
+              passwordError: _passwordError,
+              obscurePassword: _obscurePassword,
+              isLoading: isLoading,
+              isDesktop: isDesktop,
+              showBrand: true,
+              onTogglePassword: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+              onSwitchMode: () => _switchMode(true),
+              onSubmit: _submit,
+            ),
+    );
 
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 48 : 20,
-                vertical: 24,
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
+    return Scaffold(
+      body: AuthBackground(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
                 ),
-                child: Center(
-                  child: SizedBox(
-                    width: 1100,
-                    child: isDesktop
-                        ? Row(
-                            children: [
-                              const Expanded(child: RegistrationIntroduction()),
-                              const SizedBox(width: 72),
-                              SizedBox(width: 440, child: card),
-                            ],
-                          )
-                        : card,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 48,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth >= 700 ? 550 : 400,
+                      ),
+                      child: card,
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

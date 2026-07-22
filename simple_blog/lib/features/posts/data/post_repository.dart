@@ -10,16 +10,21 @@ class PostRepository {
 
   const PostRepository(this._supabaseClient);
 
-  Future<List<Post>> fetchPosts() async {
+  Future<List<Post>> fetchPosts({
+    required int offset,
+    required int limit,
+  }) async {
     final response = await _supabaseClient
         .from('posts')
         .select(
           '*, '
           'author:profiles!posts_user_id_profiles_fkey(*), '
-          'post_images(*)',
+          'post_images(*), '
+          'comments(count)',
         )
         .order('created_at', ascending: false)
-        .order('position', referencedTable: 'post_images', ascending: true);
+        .order('position', referencedTable: 'post_images', ascending: true)
+        .range(offset, offset + limit - 1);
 
     return response.map(Post.fromJson).toList();
   }
@@ -30,7 +35,8 @@ class PostRepository {
         .select(
           '*, '
           'author:profiles!posts_user_id_profiles_fkey(*), '
-          'post_images(*)',
+          'post_images(*), '
+          'comments(count)',
         )
         .eq('id', postId)
         .order('position', referencedTable: 'post_images', ascending: true)

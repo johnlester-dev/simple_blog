@@ -13,6 +13,8 @@ class CommentProvider extends ChangeNotifier {
 
   final List<Comment> _comments = [];
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
   String? _errorMessage;
   bool _isSubmitting = false;
   String? _submitErrorMessage;
@@ -27,6 +29,8 @@ class CommentProvider extends ChangeNotifier {
 
   List<Comment> get comments => List.unmodifiable(_comments);
   bool get isLoading => _isLoading;
+  bool get isLoadingMore => _isLoadingMore;
+  bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
   bool get isEmpty => !_isLoading && !hasError && _comments.isEmpty;
@@ -38,6 +42,8 @@ class CommentProvider extends ChangeNotifier {
   String? get imageErrorMessage => _imageErrorMessage;
   String? get deleteErrorMessage => _deleteErrorMessage;
   String? get updateErrorMessage => _updateErrorMessage;
+
+  static const int pageSize = 20;
 
   bool isDeletingComment(String commentId) {
     return _deletingCommentIds.contains(commentId);
@@ -55,17 +61,47 @@ class CommentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final comments = await _commentRepository.fetchComments(postId);
+      final comments = await _commentRepository.fetchComments(
+        postId,
+        offset: 0,
+        limit: pageSize,
+      );
 
       _comments
         ..clear()
         ..addAll(comments);
+      _hasMore = comments.length == pageSize;
     } on PostgrestException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
       _errorMessage = 'Unable to load comments. Please try again.';
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMoreComments(String postId) async {
+    if (_isLoading || _isLoadingMore || !_hasMore) return;
+
+    _isLoadingMore = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final nextPage = await _commentRepository.fetchComments(
+        postId,
+        offset: _comments.length,
+        limit: pageSize,
+      );
+      _comments.addAll(nextPage);
+      _hasMore = nextPage.length == pageSize;
+    } on PostgrestException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load more comments.';
+    } finally {
+      _isLoadingMore = false;
       notifyListeners();
     }
   }

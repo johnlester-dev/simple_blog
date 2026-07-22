@@ -12,8 +12,8 @@ import 'package:simple_blog/features/posts/presentation/widgets/post_image_picke
 import 'package:simple_blog/core/widgets/network_image_gallery.dart';
 
 class PostFormScreen extends StatefulWidget {
-  final Post? initialPost;
-  const PostFormScreen({super.key, this.initialPost});
+  final Post initialPost;
+  const PostFormScreen({required this.initialPost, super.key});
 
   @override
   State<PostFormScreen> createState() => _PostFormScreenState();
@@ -26,20 +26,14 @@ class _PostFormScreenState extends State<PostFormScreen> {
   late final List<PostImage> _existingImages;
   final List<PostImage> _removedImages = [];
 
-  bool get _isEditing => widget.initialPost != null;
-
   @override
   void initState() {
     super.initState();
 
     final post = widget.initialPost;
-
-    _existingImages = List.of(post?.images ?? []);
-
-    if (post != null) {
-      _titleController.text = post.title;
-      _contentController.text = post.content;
-    }
+    _existingImages = List.of(post.images);
+    _titleController.text = post.title;
+    _contentController.text = post.content;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -92,28 +86,19 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
     final formProvider = context.read<PostFormProvider>();
 
-    final post = _isEditing
-        ? await formProvider.updatePost(
-            postId: widget.initialPost!.id,
-            title: _titleController.text,
-            content: _contentController.text,
-            removedImages: List.of(_removedImages),
-          )
-        : await formProvider.createPost(
-            title: _titleController.text,
-            content: _contentController.text,
-          );
+    final post = await formProvider.updatePost(
+      postId: widget.initialPost.id,
+      title: _titleController.text,
+      content: _contentController.text,
+      removedImages: List.of(_removedImages),
+    );
 
     if (!mounted) return;
 
     if (post == null) {
       AppNotification.error(
         context,
-        message:
-            formProvider.errorMessage ??
-            (_isEditing
-                ? 'Unable to update your post.'
-                : 'Unable to create your post.'),
+        message: formProvider.errorMessage ?? 'Unable to update your post.',
       );
       return;
     }
@@ -124,17 +109,9 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
     AppNotification.success(
       context,
-      message: _isEditing
-          ? 'Your post was updated successfully.'
-          : 'Your post was created successfully.',
+      message: 'Your post was updated successfully.',
     );
-
-    if (_isEditing) {
-      context.pop(post);
-      return;
-    }
-
-    context.goNamed(RouteNames.postDetail, pathParameters: {'postId': post.id});
+    context.pop(post);
   }
 
   void _removeExistingImage(int index) {
@@ -160,7 +137,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit post' : 'Create post')),
+      appBar: AppBar(title: const Text('Edit post')),
       body: isAuthenticated ? _buildForm(isLoading) : _buildSignInRequired(),
     );
   }
@@ -201,19 +178,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                   ),
                   validator: _validateContent,
                 ),
-                if (!_isEditing) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    'Images',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const PostImagePicker(),
-                ],
-
-                if (_isEditing && _existingImages.isNotEmpty) ...[
+                if (_existingImages.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   const Text('Current images'),
                   const SizedBox(height: 12),
@@ -225,17 +190,15 @@ class _PostFormScreenState extends State<PostFormScreen> {
                     onRemove: _removeExistingImage,
                   ),
                 ],
-                if (_isEditing) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    'Add images',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                const SizedBox(height: 20),
+                Text(
+                  'Add images',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 12),
-                  const PostImagePicker(),
-                ],
+                ),
+                const SizedBox(height: 12),
+                const PostImagePicker(),
                 const SizedBox(height: 24),
                 SizedBox(
                   height: 52,
@@ -246,7 +209,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
                             dimension: 22,
                             child: CircularProgressIndicator(strokeWidth: 2.4),
                           )
-                        : Text(_isEditing ? 'Save changes' : 'Publish post'),
+                        : const Text('Save changes'),
                   ),
                 ),
               ],
@@ -266,15 +229,16 @@ class _PostFormScreenState extends State<PostFormScreen> {
           children: [
             const Icon(Icons.lock_outline_rounded, size: 48),
             const SizedBox(height: 16),
-            Text(
-              _isEditing
-                  ? 'Sign in to edit this post.'
-                  : 'Sign in to create a post.',
+            const Text(
+              'Sign in to edit this post.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => context.goNamed(RouteNames.login),
+              onPressed: () => context.goNamed(
+                RouteNames.register,
+                queryParameters: {'mode': 'login'},
+              ),
               child: const Text('Sign in'),
             ),
           ],

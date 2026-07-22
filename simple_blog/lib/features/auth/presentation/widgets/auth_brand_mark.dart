@@ -2,26 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:simple_blog/app/theme/app_theme.dart';
 
 class AuthBrandMark extends StatelessWidget {
-  const AuthBrandMark({super.key});
+  const AuthBrandMark({this.centered = false, super.key});
+
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
+    final logo = Icon(
+      Icons.forum_outlined,
+      color: AppTheme.primary,
+      size: centered ? 52 : 36,
+    );
+
+    if (centered) {
+      return Column(
+        children: [
+          logo,
+          const SizedBox(height: 14),
+          Text(
+            'Simple Blog/Forum',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppTheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Connecting ideas, one post at a time.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: AppTheme.primary,
-            borderRadius: BorderRadius.circular(13),
-          ),
-          alignment: Alignment.center,
-          child: const Icon(Icons.forum_rounded, color: Colors.white, size: 22),
-        ),
+        logo,
         const SizedBox(width: 12),
         Flexible(
           child: Text(
-            'Simple Blog',
+            'Simple Blog/Forum',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: -0.4,

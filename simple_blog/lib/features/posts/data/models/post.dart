@@ -10,6 +10,7 @@ class Post {
   final DateTime updatedAt;
   final List<PostImage> images;
   final UserProfile? author;
+  final int commentCount;
 
   const Post({
     required this.id,
@@ -19,6 +20,7 @@ class Post {
     required this.createdAt,
     required this.updatedAt,
     required this.images,
+    this.commentCount = 0,
     this.author,
   });
 
@@ -31,6 +33,7 @@ class Post {
     DateTime? updatedAt,
     List<PostImage>? images,
     UserProfile? author,
+    int? commentCount,
   }) {
     return Post(
       id: id ?? this.id,
@@ -41,6 +44,7 @@ class Post {
       updatedAt: updatedAt ?? this.updatedAt,
       images: images ?? this.images,
       author: author ?? this.author,
+      commentCount: commentCount ?? this.commentCount,
     );
   }
 
@@ -52,6 +56,12 @@ class Post {
             .toList()
           ..sort((first, second) => first.position.compareTo(second.position));
     final authorJson = jsonData['author'] as Map<String, dynamic>?;
+    final commentsJson = jsonData['comments'] as List<dynamic>? ?? [];
+    final commentCount = commentsJson.isEmpty
+        ? 0
+        : ((commentsJson.first as Map<String, dynamic>)['count'] as num?)
+                  ?.toInt() ??
+              0;
 
     return Post(
       id: jsonData['id'] as String,
@@ -62,6 +72,7 @@ class Post {
       updatedAt: DateTime.parse(jsonData['updated_at'] as String),
       author: authorJson == null ? null : UserProfile.fromJson(authorJson),
       images: images,
+      commentCount: commentCount,
     );
   }
 }

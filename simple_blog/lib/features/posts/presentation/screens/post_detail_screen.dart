@@ -3,12 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
 import 'package:simple_blog/core/widgets/app_notification.dart';
+import 'package:simple_blog/core/widgets/relative_timestamp.dart';
 import 'package:simple_blog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:simple_blog/features/comments/presentation/widgets/comment_form.dart';
 import 'package:simple_blog/features/comments/presentation/widgets/comment_list.dart';
 import 'package:simple_blog/features/posts/data/models/post.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_detail_provider.dart';
 import 'package:simple_blog/features/posts/presentation/providers/post_list_provider.dart';
+import 'package:simple_blog/features/posts/presentation/widgets/post_image_carousel.dart';
+import 'package:simple_blog/features/posts/presentation/widgets/post_detail_skeleton.dart';
 
 class PostDetailScreen extends StatelessWidget {
   final String postId;
@@ -16,7 +19,7 @@ class PostDetailScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context, PostDetailProvider provider) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const PostDetailSkeleton();
     }
 
     if (provider.hasError) {
@@ -164,9 +167,6 @@ class _PostContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formattedDate = MaterialLocalizations.of(
-      context,
-    ).formatMediumDate(post.createdAt.toLocal());
     final author = post.author;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -182,28 +182,7 @@ class _PostContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (post.images.isNotEmpty)
-                      AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: PageView.builder(
-                          itemCount: post.images.length,
-                          itemBuilder: (context, index) {
-                            final image = post.images[index];
-
-                            return Image.network(
-                              image.imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const ColoredBox(
-                                  color: Colors.black12,
-                                  child: Center(
-                                    child: Icon(Icons.broken_image_outlined),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
+                      PostImageCarousel(images: post.images, height: 480),
                     Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -249,8 +228,8 @@ class _PostContent extends StatelessWidget {
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                formattedDate,
+                              RelativeTimestamp(
+                                dateTime: post.createdAt,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),

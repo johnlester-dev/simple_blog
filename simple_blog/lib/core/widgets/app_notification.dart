@@ -53,7 +53,7 @@ abstract final class AppNotification {
     _currentEntry = entry;
     overlay.insert(entry);
 
-    _dismissTimer = Timer(const Duration(seconds: 4), () {
+    _dismissTimer = Timer(const Duration(seconds: 2), () {
       if (identical(_currentEntry, entry)) {
         dismiss();
       }

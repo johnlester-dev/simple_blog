@@ -6,6 +6,7 @@ import 'package:simple_blog/features/comments/data/models/comment.dart';
 import 'package:simple_blog/features/comments/presentation/providers/comment_provider.dart';
 import 'package:simple_blog/features/comments/presentation/widgets/comment_card.dart';
 import 'package:simple_blog/features/comments/presentation/widgets/comment_edit_dialog.dart';
+import 'package:simple_blog/features/comments/presentation/widgets/comment_list_skeleton.dart';
 
 class CommentList extends StatelessWidget {
   final String postId;
@@ -111,13 +112,10 @@ class CommentList extends StatelessWidget {
     );
 
     if (provider.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(32),
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return const CommentListSkeleton();
     }
 
-    if (provider.hasError) {
+    if (provider.hasError && provider.comments.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Column(
@@ -155,6 +153,18 @@ class CommentList extends StatelessWidget {
             onDelete: () => _confirmDelete(context, provider.comments[index]),
           ),
           if (index < provider.comments.length - 1) const SizedBox(height: 12),
+        ],
+        if (provider.hasMore || provider.isLoadingMore) ...[
+          const SizedBox(height: 16),
+          Center(
+            child: provider.isLoadingMore
+                ? const CommentListSkeleton(itemCount: 2)
+                : OutlinedButton.icon(
+                    onPressed: () => provider.loadMoreComments(postId),
+                    icon: const Icon(Icons.expand_more_rounded),
+                    label: const Text('Load more comments'),
+                  ),
+          ),
         ],
       ],
     );

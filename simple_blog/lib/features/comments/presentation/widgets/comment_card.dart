@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simple_blog/core/widgets/network_image_gallery.dart';
+import 'package:simple_blog/core/widgets/relative_timestamp.dart';
 import 'package:simple_blog/features/comments/data/models/comment.dart';
 
 enum CommentAction { edit, delete }
@@ -26,9 +27,6 @@ class CommentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final formattedDate = MaterialLocalizations.of(
-      context,
-    ).formatMediumDate(comment.createdAt.toLocal());
     final author = comment.author;
     return Card(
       margin: EdgeInsets.zero,
@@ -56,8 +54,8 @@ class CommentCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  formattedDate,
+                RelativeTimestamp(
+                  dateTime: comment.createdAt,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

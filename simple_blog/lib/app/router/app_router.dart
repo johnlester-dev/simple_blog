@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_blog/app/router/route_names.dart';
+import 'package:simple_blog/app/router/not_found_screen.dart';
 import 'package:simple_blog/features/auth/presentation/screens/login_screen.dart';
-import 'package:simple_blog/features/auth/presentation/screens/register_screen.dart';
 import 'package:simple_blog/features/comments/data/comment_repository.dart';
 import 'package:simple_blog/features/comments/presentation/providers/comment_provider.dart';
 import 'package:simple_blog/features/posts/data/models/post.dart';
@@ -16,9 +16,30 @@ import 'package:simple_blog/features/posts/presentation/screens/post_detail_scre
 import 'package:simple_blog/features/profile/data/profile_repository.dart';
 import 'package:simple_blog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:simple_blog/features/profile/presentation/screens/profile_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: RoutePaths.posts,
+  errorBuilder: (context, state) => const NotFoundScreen(),
+  redirect: (context, state) {
+    final isAuthenticated =
+        Supabase.instance.client.auth.currentSession != null;
+    final path = state.uri.path;
+    final requiresAuthentication =
+        path == RoutePaths.profile ||
+        (path.startsWith('/posts/') && path.endsWith('/edit'));
+
+    if (!isAuthenticated && requiresAuthentication) {
+      final returnPath = path.endsWith('/edit')
+          ? path.substring(0, path.length - '/edit'.length)
+          : state.uri.toString();
+      return Uri(
+        path: RoutePaths.register,
+        queryParameters: {'mode': 'login', 'redirect': returnPath},
+      ).toString();
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       path: RoutePaths.posts,
@@ -26,24 +47,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const PostListScreen(),
     ),
     GoRoute(
-      path: RoutePaths.login,
-      name: RouteNames.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
       path: RoutePaths.register,
       name: RouteNames.register,
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: RoutePaths.createPost,
-      name: RouteNames.createPost,
-      builder: (context, state) {
-        return ChangeNotifierProvider(
-          create: (context) => PostFormProvider(context.read<PostRepository>()),
-          child: const PostFormScreen(),
-        );
-      },
+      builder: (context, state) => LoginScreen(
+        initialLogin: state.uri.queryParameters['mode'] == 'login',
+      ),
     ),
     GoRoute(
       path: RoutePaths.editPost,

@@ -114,9 +114,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void clearError() {
-    if (_errorMessage == null) return;
+    if (_errorMessage == null && _status != AuthSubmissionStatus.failure) {
+      return;
+    }
 
     _errorMessage = null;
+    if (_status == AuthSubmissionStatus.failure) {
+      _status = AuthSubmissionStatus.idle;
+    }
     notifyListeners();
   }
 
