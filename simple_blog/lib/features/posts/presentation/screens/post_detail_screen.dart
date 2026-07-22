@@ -120,6 +120,17 @@ class PostDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed(RouteNames.posts);
+            }
+          },
+          tooltip: 'Back to feed',
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
         title: const Text('Post'),
         actions: [
           if (isOwner) ...[
@@ -182,7 +193,12 @@ class _PostContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (post.images.isNotEmpty)
-                      PostImageCarousel(images: post.images, height: 480),
+                      NetworkImageCarousel(
+                        imageUrls: post.images
+                            .map((image) => image.imageUrl)
+                            .toList(),
+                        height: 480,
+                      ),
                     Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(

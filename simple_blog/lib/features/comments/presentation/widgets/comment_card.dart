@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:simple_blog/core/widgets/network_image_gallery.dart';
 import 'package:simple_blog/core/widgets/relative_timestamp.dart';
 import 'package:simple_blog/features/comments/data/models/comment.dart';
+import 'package:simple_blog/features/posts/presentation/widgets/post_image_carousel.dart';
 
 enum CommentAction { edit, delete }
 
@@ -112,10 +112,14 @@ class CommentCard extends StatelessWidget {
             ),
             if (comment.images.isNotEmpty) ...[
               const SizedBox(height: 14),
-              NetworkImageGallery(
-                imageUrls: comment.images
-                    .map((image) => image.imageUrl)
-                    .toList(),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: NetworkImageCarousel(
+                  imageUrls: comment.images
+                      .map((image) => image.imageUrl)
+                      .toList(),
+                  height: 360,
+                ),
               ),
             ],
           ],

@@ -209,7 +209,7 @@ class _PostListScreenState extends State<PostListScreen> {
           return PostCard(
             post: post,
             onTap: () {
-              context.goNamed(
+              context.pushNamed(
                 RouteNames.postDetail,
                 pathParameters: {'postId': post.id},
               );

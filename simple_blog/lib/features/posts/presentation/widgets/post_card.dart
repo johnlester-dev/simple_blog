@@ -78,7 +78,10 @@ class PostCard extends StatelessWidget {
               ),
             ),
           ),
-          if (post.images.isNotEmpty) PostImageCarousel(images: post.images),
+          if (post.images.isNotEmpty)
+            NetworkImageCarousel(
+              imageUrls: post.images.map((image) => image.imageUrl).toList(),
+            ),
           Divider(height: 1, color: theme.colorScheme.outlineVariant),
           InkWell(
             onTap: onTap,

@@ -1,23 +1,26 @@
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/material.dart';
-import 'package:simple_blog/features/posts/data/models/post_image.dart';
 
-class PostImageCarousel extends StatefulWidget {
-  const PostImageCarousel({required this.images, this.height = 420, super.key});
+class NetworkImageCarousel extends StatefulWidget {
+  const NetworkImageCarousel({
+    required this.imageUrls,
+    this.height = 420,
+    super.key,
+  });
 
-  final List<PostImage> images;
+  final List<String> imageUrls;
   final double height;
 
   @override
-  State<PostImageCarousel> createState() => _PostImageCarouselState();
+  State<NetworkImageCarousel> createState() => _NetworkImageCarouselState();
 }
 
-class _PostImageCarouselState extends State<PostImageCarousel> {
+class _NetworkImageCarouselState extends State<NetworkImageCarousel> {
   late final PageController _controller;
   int _currentPage = 0;
 
-  bool get _hasMultipleImages => widget.images.length > 1;
+  bool get _hasMultipleImages => widget.imageUrls.length > 1;
 
   @override
   void initState() {
@@ -62,11 +65,11 @@ class _PostImageCarouselState extends State<PostImageCarousel> {
               ),
               child: PageView.builder(
                 controller: _controller,
-                itemCount: widget.images.length,
+                itemCount: widget.imageUrls.length,
                 onPageChanged: (page) => setState(() => _currentPage = page),
                 itemBuilder: (context, index) {
                   return Image.network(
-                    widget.images[index].imageUrl,
+                    widget.imageUrls[index],
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, progress) {
                       if (progress == null) return child;
@@ -94,7 +97,7 @@ class _PostImageCarouselState extends State<PostImageCarousel> {
                 tooltip: 'Previous image',
                 onPressed: () => _showPage(_currentPage - 1),
               ),
-            if (_currentPage < widget.images.length - 1)
+            if (_currentPage < widget.imageUrls.length - 1)
               _CarouselArrow(
                 alignment: Alignment.centerRight,
                 icon: Icons.chevron_right_rounded,
@@ -118,7 +121,7 @@ class _PostImageCarouselState extends State<PostImageCarousel> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: List.generate(widget.images.length, (index) {
+                      children: List.generate(widget.imageUrls.length, (index) {
                         final selected = index == _currentPage;
                         return GestureDetector(
                           onTap: () => _showPage(index),
@@ -155,7 +158,7 @@ class _PostImageCarouselState extends State<PostImageCarousel> {
                     vertical: 6,
                   ),
                   child: Text(
-                    '${_currentPage + 1} / ${widget.images.length}',
+                    '${_currentPage + 1} / ${widget.imageUrls.length}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
